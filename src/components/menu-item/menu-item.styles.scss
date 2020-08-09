@@ -16,6 +16,7 @@
         height: 380px;
     }
 
+    // hover effect
     &:hover {
         cursor: pointer;
 
@@ -47,6 +48,8 @@
         background-size: cover;
         background-position: center;
     }
+
+    // hover effect ends
 
     .content {
         height: 90px;
