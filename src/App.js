@@ -1,67 +1,61 @@
-import React, { Component } from 'react';
-import { Route, Switch, } from 'react-router-dom';
-
-import HomePage from './pages/homepage/homepage.components';
-import ShopPage from './pages/shop/shop.component';
-import Header from './components/header/header.component';
-import SignInSignUpPage from './pages/sign-in-sign-up/sign-in-sign-up.component';
-
+import React from 'react';
+import { Switch, Route } from 'react-router-dom';
+import { connect } from 'react-redux';
 
 import './App.css';
+
+import HomePage from './pages/homepage/homepage.component';
+import ShopPage from './pages/shop/shop.component';
+import SignInAndSignUpPage from './pages/sign-in-sign-up/sign-in-sign-up.component.jsx';
+import Header from './components/header/header.component';
 import { auth, createUserProfileDocument } from './firebase/firebase.utils';
+import { setCurrentUser } from './redux/user/user.actions';
 
-class App extends Component {
-
-  state = {
-    currentUser: null
-  }
-
-  unsubscriverFromAuth = null;
+class App extends React.Component {
+  unsubscribeFromAuth = null;
 
   componentDidMount() {
-    this.unsubscriverFromAuth = auth.onAuthStateChanged(async userAuth => {
+    const { setCurrentUser } = this.props;
+
+    this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
       if (userAuth) {
         const userRef = await createUserProfileDocument(userAuth);
 
-        // onSnapshot : Get realtime updates with Cloud Firestore
-        /*
-        db.collection("cities").doc("SF")
-        .onSnapshot(function(doc) {
-            console.log("Current data: ", doc.data());
+        userRef.onSnapshot(snapShot => {
+          setCurrentUser({
+            id: snapShot.id,
+            ...snapShot.data()
+          });
         });
-        
-        snapshot.data() : 
-        */
-        userRef.onSnapshot(snapshot => (
-          this.setState({
-            currentUser: {
-              id: snapshot.id,
-              ...snapshot.data()
-            }
-          })
-        ))
-      } else {
-        this.setState({ currentUser: userAuth });
       }
-    })
+
+      setCurrentUser(userAuth);
+    });
   }
 
   componentWillUnmount() {
-    this.unsubscriverFromAuth();
+    this.unsubscribeFromAuth();
   }
 
   render() {
     return (
-      <div className="App">
-        <Header currentUser={this.state.currentUser} />
+      <div>
+        <Header />
         <Switch>
-          <Route exact path="/" component={HomePage} />
-          <Route path="/shop" component={ShopPage} />
-          <Route path="/signin" component={SignInSignUpPage} />
+          <Route exact path='/' component={HomePage} />
+          <Route path='/shop' component={ShopPage} />
+          <Route path='/signin' component={SignInAndSignUpPage} />
         </Switch>
       </div>
     );
   }
 }
 
-export default App;
+const mapDispatchToProps = dispatch => ({
+  setCurrentUser: user => dispatch(setCurrentUser(user))
+});
+
+export default connect(
+  null,
+  mapDispatchToProps
+)(App);
