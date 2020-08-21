@@ -11,7 +11,7 @@ const CartDropdown = ({ cartItems }) => (
             <div key={item.id}>
                 <p> {item.name}</p>
                 <p> {item.imageUrl}</p>
-                {/* <p> {item.quantity}</p> */}
+                <p> {item.quantity}</p>
             </div>
         ))}
 
